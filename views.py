@@ -3,7 +3,7 @@ app = Flask(__name__)
 
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, catalog, MenuItem, Users
+from models import Base, Category, Item, Users
 
 from flask import session as login_session
 import random, string
@@ -181,22 +181,11 @@ def gdisconnect():
         return response
 
 #JSON APIs to view catalog Information
-@app.route('/catalog/<int:catalog_id>/menu/JSON')
+@app.route('/catalog.json')
 def catalogMenuJSON(catalog_id):
     catalog = session.query(catalog).filter_by(id = catalog_id).one()
-    items = session.query(MenuItem).filter_by(catalog_id = catalog_id).all()
-    return jsonify(MenuItems=[i.serialize for i in items])
-
-
-@app.route('/catalog/<int:catalog_id>/menu/<int:menu_id>/JSON')
-def menuItemJSON(catalog_id, menu_id):
-    Menu_Item = session.query(MenuItem).filter_by(id = menu_id).one()
-    return jsonify(Menu_Item = Menu_Item.serialize)
-
-@app.route('/catalog/JSON')
-def catalogsJSON():
-    catalogs = session.query(catalog).all()
-    return jsonify(catalogs= [r.serialize for r in catalogs])
+    items = session.query(item).filter_by(catalog_id = catalog_id).all()
+    return jsonify(c.serialize for c in catalog Items=[i.serialize for i in items])
 
 
 #Show all categories with latest 10 items
@@ -209,60 +198,11 @@ def showcatalogs():
     else:
         return render_template('catalogs.html', catalogs = catalogs)
 
-#Create a new catalog
-@app.route('/catalog/new/', methods=['GET','POST'])
-def newcatalog():
-    if 'username' not in login_session:
-        return redirect('/login')
-    if request.method == 'POST':
-        newcatalog = catalog(name = request.form['name'], user_id=login_session['user_id'])
-        session.add(newcatalog)
-        flash('New catalog %s Successfully Created' % newcatalog.name)
-        session.commit()
-        return redirect(url_for('showcatalogs'))
-    else:
-        return render_template('newcatalog.html')
-
-#Edit a catalog
-@app.route('/catalog/<int:catalog_id>/edit/', methods = ['GET', 'POST'])
-def editcatalog(catalog_id):
-    if 'username' not in login_session:
-        return redirect('/login')
-    editedcatalog = session.query(catalog).filter_by(id = catalog_id).one()
-    if editedcatalog.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to edit this catalog. Please create your own catalog in order to edit.');}</script><body onload='myFunction()''>"
-    if request.method == 'POST':
-        if request.form['name']:
-            editedcatalog.name = request.form['name']
-            flash('catalog Successfully Edited %s' % editedcatalog.name)
-            return redirect(url_for('showcatalogs'))
-    else:
-        return render_template('editcatalog.html', catalog = editedcatalog)
-
-
-
-#Delete a catalog
-@app.route('/catalog/<int:catalog_id>/delete/', methods = ['GET','POST'])
-def deletecatalog(catalog_id):
-    if 'username' not in login_session:
-        return redirect('/login')
-    catalogToDelete = session.query(catalog).filter_by(id = catalog_id).one()
-    if catalogToDelete.user_id != login_session['user_id']:
-        return "<script>function myFunction() {alert('You are not authorized to delete this catalog. Please create your own catalog in order to delete.');}</script><body onload='myFunction()''>"
-    if request.method == 'POST':
-        session.delete(catalogToDelete)
-        flash('%s Successfully Deleted' % catalogToDelete.name)
-        session.commit()
-        return redirect(url_for('showcatalogs', catalog_id = catalog_id))
-    else:
-        return render_template('deletecatalog.html',catalog = catalogToDelete)
-
-#Show a catalog menu
-@app.route('/catalog/<int:catalog_id>/')
-@app.route('/catalog/<int:catalog_id>/menu/')
-def showMenu(catalog_id):
-    catalog = session.query(catalog).filter_by(id = catalog_id).one()
-    items = session.query(MenuItem).filter_by(catalog_id = catalog_id).all()
+#Show a catalog
+@app.route('/catalog/<category>/')
+def showMenu(category):
+    category = session.query(category).filter_by(name = category).one()
+    items = session.query().filter_by(catalog_id = catalog_id).all()
     creator = getUserInfo(catalog.user_id)
     if 'username' not in login_session or creator.id != login_session['user_id']:
         return render_template('publicmenu.html', catalog = catalog, creator = creator)
@@ -270,7 +210,7 @@ def showMenu(catalog_id):
         return render_template('menu.html', items = items, catalog = catalog, creator = creator)
 
 #Create a new menu item
-@app.route('/catalog/<int:catalog_id>/menu/new/',methods=['GET','POST'])
+@app.route('/catalog/<category>/add/',methods=['GET','POST'])
 def newMenuItem(catalog_id):
     if 'username' not in login_session:
         return redirect('/login')
@@ -285,7 +225,7 @@ def newMenuItem(catalog_id):
         return render_template('newmenuitem.html', catalog_id = catalog_id)
 
 #Edit a menu item
-@app.route('/catalog/<int:catalog_id>/menu/<int:menu_id>/edit', methods=['GET','POST'])
+@app.route('/catalog/<category>/<item>/edit', methods=['GET','POST'])
 def editMenuItem(catalog_id, menu_id):
     if 'username' not in login_session:
         return redirect('/login')
@@ -310,7 +250,7 @@ def editMenuItem(catalog_id, menu_id):
         return render_template('editmenuitem.html', catalog_id = catalog_id, menu_id = menu_id, item = editedItem)
 
 #Delete a menu item
-@app.route('/catalog/<int:catalog_id>/menu/<int:menu_id>/delete', methods = ['GET','POST'])
+@app.route('/catalog/<category>/<item>/delete', methods = ['GET','POST'])
 def deleteMenuItem(catalog_id,menu_id):
     if 'username' not in login_session:
         return redirect('/login')
