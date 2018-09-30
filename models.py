@@ -1,4 +1,4 @@
-from sqlalchemy import Column,Integer,String
+from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
@@ -18,12 +18,19 @@ class Category(Base):
         'name' : self.name
         }
 
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+
+    def __repr__(self):
+        return "<Category('%s', '%s')>" % (self.id, self.name)
+
 class Item(Base):
     __tablename__ = 'item'
     id = Column(Integer, primary_key=True)
     title = Column(String)
-    cat_id = Column(Integer, ForeignKey('category.id'))
     description = Column(String)
+    cat_id = Column(Integer, ForeignKey('category.id'))
     category = relationship(Category)
     @property
     def serialize(self):
@@ -34,6 +41,15 @@ class Item(Base):
         'id' : self.id,
         'title' : self.title
         }
+
+    def __init__(self, id, title, description, cat_id):
+        self.id = id
+        self.title = title
+        self.description = description
+        self.cat_id = cat_id
+
+    def __repr__(self):
+        return "<Item('%s', '%s', '%s', '%s')>" % (self.id, self.title, self.description, self.cat_id)
 
 class User(Base):
     __tablename__ = 'user'

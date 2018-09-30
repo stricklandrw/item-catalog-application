@@ -1,0 +1,43 @@
+<html>
+<head>
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<div class='pane'>
+  <div class='header'>
+    <h1>Catalog App</h1>
+  </div>
+
+  <div class='flash'>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+          <li> <strong> {{message}} </strong> </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <div class='itempane'>
+
+  {% for category in categories %}
+      <div class='category'>
+        <a href="{{ url_for('showItems', category=category.name) }}">{{category.name}}</a>
+      </div>
+  {% endfor %}
+
+  {% for item in items %}
+      <div class='items'>
+        <a href="{{ url_for('itemInfo', category=item.Category.name, item=item.Item.title) }}">{{item.Item.title}}</a>
+      </div>
+  {% endfor %}
+
+  </div>
+
+</div>
+
+</body>
+</html>
