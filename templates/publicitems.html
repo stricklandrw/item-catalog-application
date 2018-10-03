@@ -29,6 +29,8 @@
       </div>
   {% endfor %}
 
+{{category}} Items ({{count}} items)
+
   {% for item in items %}
       <div class='items'>
         <a href="{{ url_for('itemInfo', category=item.Category.name, item=item.Item.title) }}">{{item.Item.title}}</a> ({{item.Category.name}})

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect,jsonify, url_for, flash
 app = Flask(__name__)
 
-from sqlalchemy import create_engine, asc, desc
+from sqlalchemy import create_engine, asc, desc, func
 from sqlalchemy.orm import sessionmaker
 from models import Base, Category, Item, User
 
@@ -182,7 +182,7 @@ def gdisconnect():
 
 #JSON APIs to view catalog Information
 @app.route('/catalog.json')
-def catalogMenuJSON(catalog_id):
+def catalogJSON(category_id):
     categories = session.query(Category).filter_by(id = category_id).one()
     items = session.query(item).filter_by(category_id = category_id).all()
 #   Replace with working code
@@ -194,7 +194,7 @@ def catalogMenuJSON(catalog_id):
 @app.route('/')
 @app.route('/catalog/')
 def showcatalogs():
-    categories = session.query(Category).order_by(asc(Category.name))
+    categories = session.query(Category).all()
     print categories
     for category in categories:
         print category
@@ -207,15 +207,21 @@ def showcatalogs():
     else:
         return render_template('catalogs.html', categories = categories, items = items)
 
-#Show a catalog
-@app.route('/catalog/<category>/')
+#Show all items in a category
+@app.route('/catalog/<category>/items')
 def showItems(category):
-    category = session.query(Category).filter_by(name = category).one()
-    items = session.query().filter_by(cat_id = category.id).all()
+    categories = session.query(Category).all()
+    print category
+    items = session.query(Item, Category).join(Category, Item.cat_id==Category.id).filter(Category.name==category).all()
+    print items
+    count = 0
+    for item in items:
+        count += 1
+    print count
     if 'username' not in login_session or creator.id != login_session['user_id']:
-        return render_template('publicmenu.html', category = category, items = items)
+        return render_template('publicitems.html', category = category, categories = categories, items = items, count = count)
     else:
-        return render_template('menu.html', category = category, items = items)
+        return render_template('items.html', category = category, categories = categories, items = items)
 
 @app.route('/catalog/<category>/<item>/')
 def itemInfo(category, item):
