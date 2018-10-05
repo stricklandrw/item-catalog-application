@@ -227,15 +227,14 @@ def showItems(category):
 def itemInfo(category, item):
     print item
     print category
-    item = session.query(Item).filter_by(name = item).one()
+    item = session.query(Item, Category).join(Category, Item.cat_id==Category.id).filter(Category.name==category, Item.title==item).one()
+#    item = session.query(Item).filter_by(title = item).one()
     print item
-    category = session.query(Category).filter_by(name = category.name).one()
-    print category
-    creator = getUserInfo(item.user_id)
+#    creator = getUserInfo(item.Item.user_id)
     if 'username' not in login_session or creator.id != login_session['user_id']:
-        return render_template('publicitem.html', category = category, creator = creator)
+        return render_template('publicitem.html', item = item)
     else:
-        return render_template('item.html', items = items, category = category, creator = creator)
+        return render_template('item.html', item = item, creator = creator)
 
 
 #Create a new menu item

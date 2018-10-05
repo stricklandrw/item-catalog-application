@@ -23,6 +23,8 @@
 
   <div class='itempane'>
 
+    <h2>Categories</h2>
+
   {% for category in categories %}
       <div class='category'>
         <a href="{{ url_for('showItems', category=category.name) }}">{{category.name}}</a>
