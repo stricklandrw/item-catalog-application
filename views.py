@@ -238,19 +238,19 @@ def itemInfo(category, item):
 
 
 #Create a new menu item
-@app.route('/catalog/<category>/add/',methods=['GET','POST'])
-def newItem(category_id):
+@app.route('/catalog/add',methods=['GET','POST'])
+def newItem():
     if 'username' not in login_session:
         return redirect('/login')
-    category = session.query(Category).filter_by(id = category_id).one()
+    category = session.query(Category).filter_by(name = category).one()
     if request.method == 'POST':
-        newItem = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], category_id = category_id, user_id=login_session['user_id'])
+        newItem = Item(title = request.form['name'], description = request.form['description'], cat_id = category.id, user_id=login_session['user_id'])
         session.add(newItem)
         session.commit()
         flash('New Menu %s Item Successfully Created' % (newItem.name))
-        return redirect(url_for('showMenu', category_id = category_id))
+        return redirect(url_for('showItems', category_id = category_id))
     else:
-        return render_template('newmenuitem.html', category_id = category_id)
+        return render_template('newitem.html', category_id = category_id)
 
 #Edit a menu item
 @app.route('/catalog/<category>/<item>/edit', methods=['GET','POST'])
@@ -273,11 +273,11 @@ def editMenuItem(category_id, menu_id):
         flash('Menu Item Successfully Edited')
         return redirect(url_for('showMenu', category_id = category_id))
     else:
-        return render_template('editmenuitem.html', category_id = category_id, menu_id = menu_id, item = editedItem)
+        return render_template('edititem.html', category_id = category_id, menu_id = menu_id, item = editedItem)
 
 #Delete a menu item
 @app.route('/catalog/<category>/<item>/delete', methods = ['GET','POST'])
-def deleteMenuItem(category_id,menu_id):
+def deleteItem(category_id,menu_id):
     if 'username' not in login_session:
         return redirect('/login')
     categories = session.query(Category).filter_by(id = category_id).one()
@@ -288,9 +288,9 @@ def deleteMenuItem(category_id,menu_id):
         session.delete(itemToDelete)
         session.commit()
         flash('Menu Item Successfully Deleted')
-        return redirect(url_for('showMenu', category_id = category_id))
+        return redirect(url_for('showItems', category_id = category_id))
     else:
-        return render_template('deleteMenuItem.html', item = itemToDelete)
+        return render_template('deleteItem.html', item = itemToDelete)
 
 def getUserID(email):
     try:
@@ -304,7 +304,7 @@ def getUserInfo(user_id):
     return user
 
 def createUser(login_session):
-    newUser = User(name = login_session['username'], email = login_session['email'],
+    newUser = User(username = login_session['username'], email = login_session['email'],
                     picture = login_session['picture'])
     session.add(newUser)
     session.commit()
