@@ -1,0 +1,36 @@
+<html>
+<head>
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<div class='pane'>
+  <div class='header'>
+    <h1>Catalog App</h1>
+    <a href="{{ url_for('gdisconnect') }}" class='button'>Logout</a>
+  </div>
+
+  <div class='flash'>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+          <li> <strong> {{message}} </strong> </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <div class=''>
+    <a href="{{ url_for('editItem') }}">Edit</a>
+    <a href="{{ url_for('deleteItem') }}">Delete</a>
+  <div class='itempane'>
+    </h2>{{item.Item.title}}</h2>
+    <p>Description: {{item.Item.description}}</p>
+  </div>
+
+</div>
+
+</body>
+</html>

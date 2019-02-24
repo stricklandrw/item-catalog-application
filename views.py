@@ -218,23 +218,32 @@ def showItems(category):
     for item in items:
         count += 1
     print count
-    if 'username' not in login_session or creator.id != login_session['user_id']:
+    if 'username' not in login_session:
         return render_template('publicitems.html', category = category, categories = categories, items = items, count = count)
     else:
         return render_template('items.html', category = category, categories = categories, items = items)
 
+#Show specific item information
 @app.route('/catalog/<category>/<item>/')
 def itemInfo(category, item):
     print item
     print category
     item = session.query(Item, Category).join(Category, Item.cat_id==Category.id).filter(Category.name==category, Item.title==item).one()
-#    item = session.query(Item).filter_by(title = item).one()
     print item
-#    creator = getUserInfo(item.Item.user_id)
-    if 'username' not in login_session or creator.id != login_session['user_id']:
-        return render_template('publicitem.html', item = item)
+    creator = getUserInfo(item.Item.user_id)
+    print creator
+    print creator.id
+    if 'username' in login_session:
+        username = login_session['username']
+        print username
+        user = session.query(User).filter_by(username = username).one()
+        print user
+        if creator.id == user.id:
+            return render_template('item.html', item = item)
+        else:
+            return render_template('publicitem.html', item = item)
     else:
-        return render_template('item.html', item = item, creator = creator)
+        return render_template('publicitem.html', item = item)
 
 
 #Create a new menu item
@@ -254,7 +263,7 @@ def newItem():
 
 #Edit a menu item
 @app.route('/catalog/<category>/<item>/edit', methods=['GET','POST'])
-def editMenuItem(category_id, menu_id):
+def editItem(category_id, menu_id):
     if 'username' not in login_session:
         return redirect('/login')
     editedItem = session.query(MenuItem).filter_by(id = menu_id).one()
