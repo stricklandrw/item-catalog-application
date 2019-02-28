@@ -1,0 +1,34 @@
+<html>
+<body>
+
+<h1>Edit Item</h1>
+
+<form action="{{ url_for('editItem', category = item.Category.name, item = item.Item.title)}}" method = 'post'>
+
+  <p>Name:</p>
+    <input type='text' size='30' name='name' placeholder='{{item.Item.title}}'>
+
+  <p>Description:</p>
+    <input type='text' size='30' name='description' placeholder='{{item.Item.description}}'>
+
+  <p>Category:</p>
+    <!-- provide list of categories provided by database -->
+    <div>
+      <select name="category">
+        {% for category in categories %}
+          {% if item.Item.cat_id == category.id %}
+            <option value="{{category.id}}" selected>{{category.name}}</option>
+          {% else %}
+            <option value="{{category.id}}">{{category.name}}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+
+<input type='submit' value='Edit'>
+<a href="{{ url_for('showcatalogs') }}">Cancel</a>
+
+</form>
+
+</body>
+</html>

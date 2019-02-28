@@ -247,42 +247,60 @@ def itemInfo(category, item):
 
 
 #Create a new menu item
-@app.route('/catalog/add',methods=['GET','POST'])
+@app.route('/catalog/additem',methods=['GET','POST'])
 def newItem():
     if 'username' not in login_session:
         return redirect('/login')
-    category = session.query(Category).filter_by(name = category).one()
     if request.method == 'POST':
-        newItem = Item(title = request.form['name'], description = request.form['description'], cat_id = category.id, user_id=login_session['user_id'])
+        #provide conversion between categories and category id.
+        #uncomment the following for troubleshooting/debugging
+        #title = request.form['name']
+        #description = request.form['description']
+        #category_id = request.form['category']
+        #print title
+        #print description
+        #print category_id
+        #category_id = session.query(Category).filter(Category.name==category_name).one()
+        #print category_id
+        user_id = session.query(User).filter(User.username==login_session['username']).one()
+        print user_id
+        newItem = Item(title = request.form['name'], description = request.form['description'], cat_id = request.form['category'], user_id = user_id.id)
         session.add(newItem)
         session.commit()
-        flash('New Menu %s Item Successfully Created' % (newItem.name))
-        return redirect(url_for('showItems', category_id = category_id))
+        flash('New Item %s Successfully Created' % (newItem.title))
+        return redirect(url_for('showcatalogs'))
     else:
-        return render_template('newitem.html', category_id = category_id)
+        categories = session.query(Category).all()
+        return render_template('newitem.html', categories = categories)
 
 #Edit a menu item
 @app.route('/catalog/<category>/<item>/edit', methods=['GET','POST'])
-def editItem(category_id, menu_id):
+def editItem(category, item):
     if 'username' not in login_session:
         return redirect('/login')
-    editedItem = session.query(MenuItem).filter_by(id = menu_id).one()
-    categories = session.query(Category).filter_by(id = category_id).one()
-    if editedItem.user_id != login_session['user_id']:
+    user_id = session.query(User).filter(User.username==login_session['username']).one()
+    print user_id
+    print user_id.id
+    editedItem = session.query(Item, Category).join(Category, Item.cat_id==Category.id).filter(Category.name==category, Item.title==item).one()
+    print editedItem
+    categories = session.query(Category).all()
+    print categories
+    print login_session
+    if editedItem.Item.user_id != user_id.id:
         return "<script>function myFunction() {alert('You are not authorized to edit this item. Please create your own item in order to edit.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
         if request.form['description']:
             editedItem.description = request.form['description']
-        if request.form['course']:
-            editedItem.course = request.form['course']
+        if request.form['category']:
+            editedItem.cat_id = request.form['category']
         session.add(editedItem)
         session.commit()
-        flash('Menu Item Successfully Edited')
-        return redirect(url_for('showMenu', category_id = category_id))
+        flash('Item Successfully Edited')
+        return redirect(url_for('showcatalogs', categories = categories))
     else:
-        return render_template('edititem.html', category_id = category_id, menu_id = menu_id, item = editedItem)
+        return render_template('edititem.html', categories = categories, item = editedItem)
 
 #Delete a menu item
 @app.route('/catalog/<category>/<item>/delete', methods = ['GET','POST'])

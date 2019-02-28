@@ -1,0 +1,29 @@
+<html>
+<body>
+
+<h1>New Item</h1>
+
+<form action="{{ url_for('newItem')}}" method = 'post'>
+
+  <p>Name:</p>
+    <input type='text' size='30' name='name'>
+
+  <p>Description:</p>
+    <input type='text' size='30' name='description'>
+
+  <p>Category:</p>
+    <!-- provide list of categories provided by database -->
+    <div>
+      <select name="category">
+        {% for category in categories %}
+        <option value="{{category.id}}">{{category.name}}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+<input type='submit' value='Create'>
+
+</form>
+
+</body>
+</html>
