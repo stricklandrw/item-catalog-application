@@ -23,8 +23,8 @@
   </div>
 
   <div class=''>
-    <a href="{{ url_for('editItem') }}">Edit</a>
-    <a href="{{ url_for('deleteItem') }}">Delete</a>
+    <a href="{{ url_for('editItem', category = item.Category.name, item = item.Item.title) }}">Edit</a>
+    <a href="{{ url_for('deleteItem', category = item.Category.name, item = item.Item.title) }}">Delete</a>
   <div class='itempane'>
     </h2>{{item.Item.title}}</h2>
     <p>Description: {{item.Item.description}}</p>

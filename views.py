@@ -300,22 +300,22 @@ def editItem(category, item):
         flash('Item Successfully Edited')
         return redirect(url_for('showcatalogs', categories = categories))
     else:
-        return render_template('edititem.html', categories = categories, item = editedItem)
+        return render_template('editItem.html', categories = categories, item = editedItem)
 
 #Delete a menu item
 @app.route('/catalog/<category>/<item>/delete', methods = ['GET','POST'])
-def deleteItem(category_id,menu_id):
+def deleteItem(category, item):
     if 'username' not in login_session:
         return redirect('/login')
-    categories = session.query(Category).filter_by(id = category_id).one()
-    itemToDelete = session.query(Item).filter_by(id = menu_id).one()
-    if itemToDelete.user_id != login_session['user_id']:
+    itemToDelete = session.query(Item, Category).join(Category, Item.cat_id==Category.id).filter(Category.name==category, Item.title==item).one()
+    print itemToDelete
+    if itemToDelete.Item.user_id != login_session['user_id']:
         return "<script>function myFunction() {alert('You are not authorized to delete this item. Please create your own item in order to delete.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
-        session.delete(itemToDelete)
+        session.delete(itemToDelete.Item)
         session.commit()
-        flash('Menu Item Successfully Deleted')
-        return redirect(url_for('showItems', category_id = category_id))
+        flash('Item Successfully Deleted')
+        return redirect(url_for('showItems', category = itemToDelete.Category.name))
     else:
         return render_template('deleteItem.html', item = itemToDelete)
 
