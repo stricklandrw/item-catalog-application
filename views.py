@@ -199,10 +199,10 @@ def showcatalogs():
     print items
     for item in items:
         print item
-    if 'username' not in login_session:
-        return render_template('publiccatalogs.html', categories = categories, items = items)
-    else:
+    if 'username' in login_session:
         return render_template('catalogs.html', categories = categories, items = items)
+    else:
+        return render_template('publiccatalogs.html', categories = categories, items = items)
 
 #Show all items in a category
 @app.route('/catalog/<category>/items')
@@ -215,10 +215,10 @@ def showItems(category):
     for item in items:
         count += 1
     print count
-    if 'username' not in login_session:
-        return render_template('publicitems.html', category = category, categories = categories, items = items, count = count)
-    else:
+    if 'username' in login_session:
         return render_template('items.html', category = category, categories = categories, items = items, count = count)
+    else:
+        return render_template('publicitems.html', category = category, categories = categories, items = items, count = count)
 
 #Show specific item information
 @app.route('/catalog/<category>/<item>/')
@@ -231,14 +231,7 @@ def itemInfo(category, item):
     print creator
     print creator.id
     if 'username' in login_session:
-        username = login_session['username']
-        print username
-        user = session.query(User).filter_by(username = username).one()
-        print user
-        if creator.id == user.id:
-            return render_template('item.html', item = item)
-        else:
-            return render_template('publicitem.html', item = item)
+        return render_template('item.html', item = item)
     else:
         return render_template('publicitem.html', item = item)
 
