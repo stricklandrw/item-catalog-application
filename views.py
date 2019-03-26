@@ -297,8 +297,8 @@ def editItem(category, item):
                .filter(User.username == login_session['username'])
                .one()
                )
-    print user_id
-    print user_id.id
+    # print user_id
+    # print user_id.id
     editedItem = (session.query(Item, Category)
                   .join(Category, Item.cat_id == Category.id)
                   .filter(Category.name == category, Item.title == item)
@@ -308,6 +308,11 @@ def editItem(category, item):
     categories = session.query(Category).all()
     print categories
     print login_session
+    print editedItem.Item.id
+    changeItem = (session.query(Item)
+                  .filter_by(id=editedItem.Item.id)
+                  .one()
+                  )
     if editedItem.Item.user_id != user_id.id:
         return "<script>function myFunction() \
                 {alert('You are not authorized to edit this item. Please \
@@ -315,12 +320,12 @@ def editItem(category, item):
                 onload='myFunction()''>"
     if request.method == 'POST':
         if request.form['name']:
-            editedItem.name = request.form['name']
+            changeItem.title = request.form['name']
         if request.form['description']:
-            editedItem.description = request.form['description']
+            changeItem.description = request.form['description']
         if request.form['category']:
-            editedItem.cat_id = request.form['category']
-        session.add(editedItem)
+            changeItem.cat_id = request.form['category']
+        session.add(changeItem)
         session.commit()
         flash('Item Successfully Edited')
         return redirect(url_for('showcatalogs', categories=categories))
