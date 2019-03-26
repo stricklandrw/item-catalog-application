@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect,jsonify, url_for, flash
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 app = Flask(__name__)
 
 from sqlalchemy import create_engine, asc, desc, func
@@ -182,13 +182,10 @@ def gdisconnect():
 
 #JSON APIs to view catalog Information
 @app.route('/catalog.json')
-def catalogJSON(category_id):
-    categories = session.query(Category).filter_by(id = category_id).one()
-    items = session.query(item).filter_by(category_id = category_id).all()
-#   Replace with working code
-    return
-#    return jsonify(c.serialize for c in category Items=[i.serialize for i in items])
-
+def catalogJSON():
+    categories = session.query(Category)
+    print categories
+    return jsonify(Category = [c.serialize for c in categories.all()])
 
 #Show all categories with latest 10 items
 @app.route('/')
@@ -221,7 +218,7 @@ def showItems(category):
     if 'username' not in login_session:
         return render_template('publicitems.html', category = category, categories = categories, items = items, count = count)
     else:
-        return render_template('items.html', category = category, categories = categories, items = items)
+        return render_template('items.html', category = category, categories = categories, items = items, count = count)
 
 #Show specific item information
 @app.route('/catalog/<category>/<item>/')

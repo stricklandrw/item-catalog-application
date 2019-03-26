@@ -10,19 +10,21 @@ class Category(Base):
     __tablename__ = 'category'
     id = Column(Integer, primary_key=True)
     name = Column(String)
+    items = relationship("Item")
     @property
     def serialize(self):
         """Return category data in easily serializeable format"""
         return {
         'id' : self.id,
-        'name' : self.name
+        'name' : self.name,
+        'Item' : [item.serialize for item in self.items]
         }
 
     def __init__(self, name):
         self.name = name
 
     def __repr__(self):
-        return "<Category('%s', '%s')>" % (self.id, self.name)
+        return "<Category('%s', '%s', '%s')>" % (self.id, self.name, self.items)
 
 class User(Base):
     __tablename__ = 'user'
@@ -63,7 +65,7 @@ class Item(Base):
     title = Column(String)
     description = Column(String)
     cat_id = Column(Integer, ForeignKey('category.id'))
-    category = relationship(Category)
+    category = relationship(Category, back_populates='items')
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
     @property
