@@ -6,7 +6,8 @@
 
 <div class='pane'>
   <div class='header'>
-    <h1>Catalog App</h1><a href="{{ url_for('showLogin') }}" class='button'>Login</a>
+    <h1>Catalog App</h1>
+    <a href="{{ url_for('showLogin') }}" class='button'>Login</a>
   </div>
 
   <div class='flash'>
@@ -21,15 +22,19 @@
     {% endwith %}
   </div>
 
-  <div class='itempane'>
+  <div class='categorypane'>
 
     <h2>Categories</h2>
 
   {% for category in categories %}
-      <div class='category'>
+      <span class='category'>
         <a href="{{ url_for('showItems', category=category.name) }}">{{category.name}}</a>
-      </div>
+      </span>
   {% endfor %}
+
+  </div>
+
+  <div class='itempane'>
 
     <h2>Latest Items</h2>
 

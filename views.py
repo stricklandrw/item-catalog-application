@@ -304,11 +304,9 @@ def editItem(category, item):
                   .filter(Category.name == category, Item.title == item)
                   .one()
                   )
-    print editedItem
+    # print editedItem
     categories = session.query(Category).all()
-    print categories
-    print login_session
-    print editedItem.Item.id
+    # print login_session
     changeItem = (session.query(Item)
                   .filter_by(id=editedItem.Item.id)
                   .one()
