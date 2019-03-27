@@ -22,6 +22,7 @@ h1 {
 
 h2 {
     font-size: 1.2em;
+    color: #ffffee;
 }
 
 p, dd, dt {
@@ -40,6 +41,12 @@ a {
     margin: 5px;
     border-color: #999999;
     background-color: #333333
+}
+
+.pane::after {
+  content: "";
+  clear: both;
+  display: table;
 }
 
 .header {

@@ -241,6 +241,7 @@ def showItems(category):
 # Show specific item information
 @app.route('/catalog/<category>/<item>/')
 def itemInfo(category, item):
+    categories = session.query(Category).all()
     print item
     print category
     item = (session.query(Item, Category)
@@ -253,9 +254,10 @@ def itemInfo(category, item):
     print creator
     print creator.id
     if 'username' in login_session:
-        return render_template('item.html', item=item)
+        return render_template('item.html', categories=categories, item=item)
     else:
-        return render_template('publicitem.html', item=item)
+        return render_template('publicitem.html', categories=categories,
+                               item=item)
 
 # Create a new menu item
 @app.route('/catalog/additem', methods=['GET', 'POST'])
@@ -361,7 +363,7 @@ def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
-    except InvalidRequestError:
+    except:
         return None
 
 

@@ -21,8 +21,20 @@
     {% endwith %}
   </div>
 
+  <div class='categorypane'>
+
+    <h2>Categories</h2>
+
+  {% for category in categories %}
+      <span class='category'>
+        <a href="{{ url_for('showItems', category=category.name) }}">{{category.name}}</a>
+      </span>
+  {% endfor %}
+
+  </div>
+
   <div class='itempane'>
-    </h2>{{item.Item.title}}</h2>
+    <h2>{{item.Item.title}}</h2>
     <p>Description: {{item.Item.description}}</p>
   </div>
 
