@@ -356,7 +356,9 @@ def deleteItem(category, item):
         return redirect(url_for('showItems',
                                 category=itemToDelete.Category.name))
     else:
-        return render_template('deleteItem.html', item=itemToDelete)
+        categories = session.query(Category).all()
+        return render_template('deleteItem.html', categories=categories,
+                               item=itemToDelete)
 
 
 def getUserID(email):

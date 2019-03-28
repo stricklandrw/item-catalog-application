@@ -58,7 +58,6 @@ a {
     width: 30%;
     display: inline-block;
     padding: 8px;
-    border-right: 2px solid #eee;
 }
 
 .itempane {
@@ -66,6 +65,7 @@ a {
     width: 70%;
     display: inline-block;
     padding: 8px;
+    border-left: 2px solid #eee;
 }
 
 .namepricepane {
