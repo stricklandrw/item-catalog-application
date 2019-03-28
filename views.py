@@ -1,18 +1,18 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for
 from flask import flash
+from flask import session as login_session
+from flask import make_response
 from sqlalchemy import create_engine, asc, desc, func
 from sqlalchemy.orm import sessionmaker
 from models import Base, Category, Item, User
-from flask import session as login_session
 import random
 import string
+import json
+import requests
 # Imports for GConnect
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
-import json
-from flask import make_response
-import requests
 
 app = Flask(__name__)
 
@@ -115,7 +115,7 @@ def gconnect():
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
 
-    # see if user exists, if it does not, create a new one
+    # See if user exists, if it does not, create a new one
     user_id = getUserID(login_session['email'])
     if not user_id:
         user_id = createUser(login_session)
@@ -147,7 +147,6 @@ def gdisconnect():
     print 'In gdisconnect access token is %s' % login_session['access_token']
     print 'User name is: '
     print login_session['username']
-    #    access_token = credentials.access_token
     url = 'https://accounts.google.com/o/oauth2/revoke?token='
     url += str(login_session['access_token'])
     h = httplib2.Http()
@@ -186,7 +185,7 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-# JSON APIs to view catalog Information
+# JSON APIs to view catalog information
 @app.route('/catalog.json')
 def catalogJSON():
     categories = session.query(Category)
@@ -197,17 +196,17 @@ def catalogJSON():
 @app.route('/')
 @app.route('/catalog/')
 def showcatalogs():
+    # Get all category information
     categories = session.query(Category).all()
-    print categories
-    for category in categories:
-        print category
+    for c in categories:
+        print c
+    # Retrieve last 10 items added to the database
     items = (session.query(Item, Category)
              .join(Category, Item.cat_id == Category.id)
              .order_by(desc(Item.id))
              .limit(10)
              )
-    print items
-    for item in items:
+    for i in items:
         print item
     if 'username' in login_session:
         return render_template('catalogs.html', categories=categories,
@@ -219,14 +218,18 @@ def showcatalogs():
 # Show all items in a category
 @app.route('/catalog/<category>/items')
 def showItems(category):
+    # Get all category information
     categories = session.query(Category).all()
     print category
+    # Retrieve all items for a given category
     items = (session.query(Item, Category)
              .join(Category, Item.cat_id == Category.id)
              .filter(Category.name == category)
              .all()
              )
     print items
+    # Count the number of items retrieved from database
+    # TO DO - Replace with database count query
     count = 0
     for item in items:
         count += 1
@@ -241,18 +244,17 @@ def showItems(category):
 # Show specific item information
 @app.route('/catalog/<category>/<item>/')
 def itemInfo(category, item):
+    # Get all category information
     categories = session.query(Category).all()
     print item
     print category
+    # Retrieve requested item of the given category
     item = (session.query(Item, Category)
             .join(Category, Item.cat_id == Category.id)
             .filter(Category.name == category, Item.title == item)
             .one()
             )
     print item
-    creator = getUserInfo(item.Item.user_id)
-    print creator
-    print creator.id
     if 'username' in login_session:
         return render_template('item.html', categories=categories, item=item)
     else:
@@ -265,19 +267,22 @@ def newItem():
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
-        # provide conversion between categories and category id.
-        # uncomment the following for troubleshooting/debugging
+        # Provide conversion between categories and category id.
+        # Uncomment the following for troubleshooting/debugging
         # title = request.form['name']
         # description = request.form['description']
         # category_id = request.form['category']
         # print title
         # print description
         # print category_id
+        # Get user information from form and check against database
         user_id = (session.query(User)
                    .filter(User.username == login_session['username'])
                    .one()
                    )
         print user_id
+        # TO DO - use new function to review/format inputs to insert into db
+        # Build item for input into database
         newItem = Item(title=request.form['name'],
                        description=request.form['description'],
                        cat_id=request.form['category'],
@@ -287,6 +292,7 @@ def newItem():
         flash('New Item %s Successfully Created' % (newItem.title))
         return redirect(url_for('showcatalogs'))
     else:
+        # Get all category information
         categories = session.query(Category).all()
         return render_template('newitem.html', categories=categories)
 
@@ -301,24 +307,29 @@ def editItem(category, item):
                )
     # print user_id
     # print user_id.id
+    # Get item and category from database to provide information to edit
     editedItem = (session.query(Item, Category)
                   .join(Category, Item.cat_id == Category.id)
                   .filter(Category.name == category, Item.title == item)
                   .one()
                   )
     # print editedItem
+    # Get all category information
     categories = session.query(Category).all()
     # print login_session
+    # Get item from database to provide information to edit
     changeItem = (session.query(Item)
                   .filter_by(id=editedItem.Item.id)
                   .one()
                   )
+    # Reject attempt to edit if not the creator
     if editedItem.Item.user_id != user_id.id:
         return "<script>function myFunction() \
                 {alert('You are not authorized to edit this item. Please \
                 create your own item in order to edit.');}</script><body \
                 onload='myFunction()''>"
     if request.method == 'POST':
+        # TO DO - use new function to review/format inputs to insert into db
         if request.form['name']:
             changeItem.title = request.form['name']
         if request.form['description']:
@@ -338,12 +349,14 @@ def editItem(category, item):
 def deleteItem(category, item):
     if 'username' not in login_session:
         return redirect('/login')
+    # Get item and category from database to provide information to be deleted
     itemToDelete = (session.query(Item, Category)
                     .join(Category, Item.cat_id == Category.id)
                     .filter(Category.name == category, Item.title == item)
                     .one()
                     )
     print itemToDelete
+    # Reject attempt to delete if not the creator
     if itemToDelete.Item.user_id != login_session['user_id']:
         return "<script>function myFunction() \
                 {alert('You are not authorized to delete this item. Please \
@@ -356,6 +369,7 @@ def deleteItem(category, item):
         return redirect(url_for('showItems',
                                 category=itemToDelete.Category.name))
     else:
+        # Get all category information
         categories = session.query(Category).all()
         return render_template('deleteItem.html', categories=categories,
                                item=itemToDelete)
@@ -365,7 +379,7 @@ def getUserID(email):
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
-    except:
+    except Exception:
         return None
 
 
@@ -383,6 +397,10 @@ def createUser(login_session):
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
+
+
+# TO DO
+# Add new function to review and format inputs to insert into database
 
 
 if __name__ == '__main__':
