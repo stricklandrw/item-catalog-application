@@ -207,7 +207,7 @@ def showcatalogs():
              .limit(10)
              )
     for i in items:
-        print item
+        print i
     if 'username' in login_session:
         return render_template('catalogs.html', categories=categories,
                                items=items)
