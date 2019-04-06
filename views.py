@@ -241,6 +241,18 @@ def showItems(category):
         return render_template('publicitems.html', category=category,
                                categories=categories, items=items, count=count)
 
+# Return item information via JSON
+@app.route('/catalog/<category>/<item>/JSON')
+def itemJSON(category, item):
+    item = (session.query(Item, Category)
+            .join(Category, Item.cat_id == Category.id)
+            .filter(Category.name == category, Item.title == item)
+            .one()
+            )
+    # Pull only the item due to the db join in the query to find the right item.
+    item = item[0]
+    return jsonify(Item=item.serialize)
+
 # Show specific item information
 @app.route('/catalog/<category>/<item>/')
 def itemInfo(category, item):
