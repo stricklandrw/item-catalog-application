@@ -41,10 +41,10 @@
     <form action="{{ url_for('newItem')}}" method = 'post'>
 
       <p>Name:</p>
-        <input type='text' size='30' name='name'>
+        <input type='text' size='30' name='name' required>
 
       <p>Description:</p>
-        <input type='text' size='30' name='description'>
+        <input type='text' size='30' name='description' required>
 
       <p>Category:</p>
         <!-- provide list of categories provided by database -->
