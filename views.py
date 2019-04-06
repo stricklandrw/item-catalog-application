@@ -26,6 +26,7 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+
 # Create a state token to prevent request forgery.
 # Store it in the session for later validation.
 @app.route('/login')
@@ -34,6 +35,7 @@ def showLogin():
                     x in xrange(32))
     login_session['state'] = state
     return render_template('login.html', STATE=state)
+
 
 # GConnect client authentication
 @app.route('/gconnect', methods=['POST'])
@@ -132,6 +134,7 @@ def gconnect():
     flash("you are now logged in as %s" % login_session['username'])
     return output
 
+
 # DISCONNECT - Revoke a current user's token and reset their login_session.
 @app.route('/gdisconnect')
 def gdisconnect():
@@ -180,10 +183,11 @@ def gdisconnect():
 
     else:
         # For whatever reason, the given token was invalid.
-        response = make_response(json.dumps('Failed to revoke token for given'
-                                            + ' user.'), 400)
+        response = make_response(json.dumps('Failed to revoke token for ' +
+                                            ' given user.'), 400)
         response.headers['Content-Type'] = 'application/json'
         return response
+
 
 # JSON APIs to view catalog information
 @app.route('/catalog.json')
@@ -191,6 +195,7 @@ def catalogJSON():
     categories = session.query(Category)
     print categories
     return jsonify(Category=[c.serialize for c in categories.all()])
+
 
 # Show all categories with latest 10 items
 @app.route('/')
@@ -214,6 +219,7 @@ def showcatalogs():
     else:
         return render_template('publiccatalogs.html', categories=categories,
                                items=items)
+
 
 # Show all items in a category
 @app.route('/catalog/<category>/items')
@@ -241,6 +247,7 @@ def showItems(category):
         return render_template('publicitems.html', category=category,
                                categories=categories, items=items, count=count)
 
+
 # Return item information via JSON
 @app.route('/catalog/<category>/<item>/JSON')
 def itemJSON(category, item):
@@ -249,9 +256,10 @@ def itemJSON(category, item):
             .filter(Category.name == category, Item.title == item)
             .one()
             )
-    # Pull only the item due to the db join in the query to find the right item.
+    # Pull only item due to the db join in the query to find the right item.
     item = item[0]
     return jsonify(Item=item.serialize)
+
 
 # Show specific item information
 @app.route('/catalog/<category>/<item>/')
@@ -272,6 +280,7 @@ def itemInfo(category, item):
     else:
         return render_template('publicitem.html', categories=categories,
                                item=item)
+
 
 # Create a new menu item
 @app.route('/catalog/additem', methods=['GET', 'POST'])
@@ -307,6 +316,7 @@ def newItem():
         # Get all category information
         categories = session.query(Category).all()
         return render_template('newitem.html', categories=categories)
+
 
 # Edit a menu item
 @app.route('/catalog/<category>/<item>/edit', methods=['GET', 'POST'])
@@ -355,6 +365,7 @@ def editItem(category, item):
     else:
         return render_template('editItem.html', categories=categories,
                                item=editedItem)
+
 
 # Delete a menu item
 @app.route('/catalog/<category>/<item>/delete', methods=['GET', 'POST'])
