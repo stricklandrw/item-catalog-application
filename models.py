@@ -7,29 +7,6 @@ from passlib.apps import custom_app_context as pwd_context
 Base = declarative_base()
 
 
-class Category(Base):
-    __tablename__ = 'category'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    items = relationship("Item")
-
-    @property
-    def serialize(self):
-        """Return category data in easily serializeable format"""
-        return {
-                'id': self.id,
-                'name': self.name,
-                'Item': [item.serialize for item in self.items]
-        }
-
-    def __init__(self, name):
-        self.name = name
-
-    def __repr__(self):
-        return "<Category('%s', '%s', '%s')>" % (self.id, self.name,
-                                                 self.items)
-
-
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
@@ -71,7 +48,6 @@ class Item(Base):
     title = Column(String)
     description = Column(String)
     cat_id = Column(Integer, ForeignKey('category.id'))
-    category = relationship(Category, back_populates='items')
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
 
@@ -97,6 +73,29 @@ class Item(Base):
                                                          self.description,
                                                          self.cat_id,
                                                          self.user_id)
+
+
+class Category(Base):
+    __tablename__ = 'category'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    items = relationship(Item, cascade="all, delete-orphan",
+                         single_parent=True)
+
+    @property
+    def serialize(self):
+        """Return category data in easily serializeable format"""
+        return {
+                'id': self.id,
+                'name': self.name,
+        }
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return "<Category('%s', '%s', '%s')>" % (self.id, self.name,
+                                                 self.items)
 
 
 engine = create_engine('sqlite:///catalog.db')

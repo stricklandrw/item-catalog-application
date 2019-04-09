@@ -42,6 +42,6 @@ Access the website by connecting to the web server using your favorite browser p
 
 ### API Access
 
-To receive a complete JSON output of the site, visit http://localhost:8000/catalog.json
+To receive a JSON output of the categories, visit http://localhost:8000/catalog.json
 
 To receive a JSON output of a single item, add "JSON" to the item's URI.  For example, to receive the JSON output of the Soccer Cleats, visit http://localhost:8000/catalog/Soccer/Soccer%20Cleats/JSON
